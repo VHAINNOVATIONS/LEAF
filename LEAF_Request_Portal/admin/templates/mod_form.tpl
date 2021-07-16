@@ -138,8 +138,6 @@ function editProperties(isSubForm) {
                     	categoryID: currCategoryID,
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
-                        if(res != null) {
-                        }
                         categories[currCategoryID].name = $('#name').val();
                     }
                 }));
@@ -153,8 +151,6 @@ function editProperties(isSubForm) {
                     	categoryID: currCategoryID,
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
-                        if(res != null) {
-                        }
                         categories[currCategoryID].description = $('#description').val();
                     }
                 }));
@@ -186,8 +182,6 @@ function editProperties(isSubForm) {
                         categoryID: currCategoryID,
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
-                        if(res != null) {
-                        }
                         categories[currCategoryID].needToKnow = $('#needToKnow').val();
                     }
                 }));
@@ -202,8 +196,6 @@ function editProperties(isSubForm) {
                         categoryID: currCategoryID,
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
-                        if(res != null) {
-                        }
                         categories[currCategoryID].sort = $('#sort').val();
                     }
                 }));
@@ -218,8 +210,6 @@ function editProperties(isSubForm) {
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
                         categories[currCategoryID].visible= $('#visible').val();
-                        if(res != null) {
-                        }
                     }
                 });
             }
@@ -233,8 +223,6 @@ function editProperties(isSubForm) {
                         categoryID: currCategoryID,
                         CSRFToken: '<!--{$CSRFToken}-->'},
                     success: function(res) {
-                        if(res != null) {
-                        }
                         categories[currCategoryID].formType = $('#formType').val();
                     }
                 }));
@@ -709,12 +697,8 @@ function newQuestion(parentIndicatorID) {
                 type: 'POST',
                 url: '../api/?a=formEditor/formNeedToKnow',
                 data: {needToKnow: '1',
-                categoryID: currCategoryID,
-                CSRFToken: '<!--{$CSRFToken}-->'},
-                success: function(res) {
-                    if(res != null) {
-                    }
-                }
+                    categoryID: currCategoryID,
+                    CSRFToken: '<!--{$CSRFToken}-->'}
             });
             categories[currCategoryID].needToKnow = 1;
         }
@@ -790,12 +774,8 @@ function newQuestion(parentIndicatorID) {
                             type: 'POST',
                             url: '../api/?a=formEditor/' + res + '/sort',
                             data: {sort: $('#sort').val(),
-                                CSRFToken: '<!--{$CSRFToken}-->'},
-                            success: function(res) {
-                                if(res != null) {
-                                }
-                            }
-                    })  ;
+                                CSRFToken: '<!--{$CSRFToken}-->'}
+                        });
                     }
                 }
                 dialog.hide();
@@ -1095,9 +1075,16 @@ function getForm(indicatorID, series) {
                     </tr>\
                     <tr>\
                         <td>Disabled</td>\
-                        <td colspan="1"><input id="disabled" name="disabled" type="checkbox" /></td>\
+                        <td colspan="1"><input id="disabled" name="disable_or_delete" type="checkbox" value="disabled" /></td>\
                         <td style="width: 275px;">\
-                            <span id="disabled-warning" style="color: red; visibility: hidden;">This field will be disabled. It can be</br>re-enabled within 30 days under</br>Form Editor -&gt; Restore Fields</span>\
+                            <span id="disabled-warning" style="color: red; visibility: hidden;">This field will be archived.  It can be</br>re-enabled by using the Form Editor</span>\
+                        </td>\
+                    </tr>\
+                    <tr>\
+                        <td>Deleted</td>\
+                        <td colspan="1"><input id="deleted" name="disable_or_delete" type="checkbox" value="deleted" /></td>\
+                        <td style="width: 275px;">\
+                            <span id="deletion-warning" style="color: red; visibility: hidden;">Deleted items can only be re-enabled</br>within 30 days by using the Form Editor</span>\
                         </td>\
                     </tr>\
                 </table>\
@@ -1178,22 +1165,49 @@ function getForm(indicatorID, series) {
             event.preventDefault();
         }
     });
-    $('#disabled').on("change", function(event) {
-        if($(this).is(':checked'))
-        {
-            $('#disabled-warning').css('visibility','visible');
-        }
-        else
-        {
-            $('#disabled-warning').css('visibility','hidden');
-        }
-    });
-    $('#required').keypress(function(e){
+    $('#disabled').keypress(function(e){
         if((e.keyCode ? e.keyCode : e.which) === 13){
             $(this).trigger('click');
         }
     });
-    $('#disabled').keypress(function(e){
+    $('#disabled').on("change", function(event) {
+        if($(this).is(':checked'))
+        {
+            $('#deleted').prop('checked', false);
+            $('#deletion-warning').css('visibility','hidden');
+            $('#disabled-warning').css('visibility','visible');
+        }
+        else
+        {
+            $('#disabled').prop('checked', false);
+            $('#disabled-warning').css('visibility','hidden');
+        }
+    });
+    $('#deleted').keypress(function(event) {
+        if(event.keyCode === 13) {
+            event.preventDefault();
+        }
+    });
+    $('#deleted').keypress(function(e){
+        if((e.keyCode ? e.keyCode : e.which) === 13){
+            $(this).trigger('click');
+        }
+    });
+    $('#deleted').on("change", function(event) {
+        if($(this).is(':checked'))
+        {
+            $('#disabled').prop('checked', false);
+            $('#deletion-warning').css('visibility','visible');
+            $('#disabled-warning').css('visibility','hidden');
+        }
+        else
+        {
+            $('#deleted').prop('checked', false);
+            $('#deletion-warning').css('visibility','hidden');
+        }
+    });
+
+    $('#required').keypress(function(e){
         if((e.keyCode ? e.keyCode : e.which) === 13){
             $(this).trigger('click');
         }
@@ -1263,8 +1277,6 @@ function getForm(indicatorID, series) {
             success: function(res) {
                 let time = new Date().toLocaleTimeString();
                 $('#codeSaveStatus_html').html('<br /> Last saved: ' + time);
-                if(res != null) {
-                }
             }
         });
     }
@@ -1281,8 +1293,6 @@ function getForm(indicatorID, series) {
             success: function(res) {
             	let time = new Date().toLocaleTimeString();
             	$('#codeSaveStatus_htmlPrint').html('<br /> Last saved: ' + time);
-                if(res != null) {
-                }
             }
         });
     }
@@ -1424,20 +1434,19 @@ function getForm(indicatorID, series) {
     });
 
     dialog.setSaveHandler(function() {
-    	let isRequired = $('#required').is(':checked') ? 1 : 0;
-        let isSensitive = $('#sensitive').is(':checked') ? 1 : 0;
-    	let isDisabled = $('#disabled').is(':checked') ? 1 : 0;
-        if (isSensitive === 1) {
+        /*the below values are used by the indicators table*/
+    	let requiredIndicator = $('#required').is(':checked') ? 1 : 0;
+        let sensitiveIndicator = $('#sensitive').is(':checked') ? 1 : 0;
+    	let disabledIndicator = $('#disabled').is(':checked') ? 1 : 0;
+    	let deletedIndicator =  $('#deleted').is(':checked')  ? 2 : 0;
+
+        if (sensitiveIndicator === 1) {
             $.ajax({
                 type: 'POST',
                 url: '../api/?a=formEditor/formNeedToKnow',
                 data: {needToKnow: '1',
                 categoryID: currCategoryID,
-                CSRFToken: '<!--{$CSRFToken}-->'},
-                success: function(res) {
-                    if(res != null) {
-                    }
-                }
+                CSRFToken: '<!--{$CSRFToken}-->'}
             });
             categories[currCategoryID].needToKnow = 1;
         }
@@ -1508,8 +1517,8 @@ function getForm(indicatorID, series) {
         let formatChanged = (indicatorEditing.format || "") != $('#format').val();
         let descriptionChanged = (indicatorEditing.description || "") != $('#description').val();
         let defaultChanged = (indicatorEditing.default || "") != $('#default').val();
-        let requiredChanged = (indicatorEditing.required || "") != isRequired;
-        let sensitiveChanged = (indicatorEditing.is_sensitive || "") != isSensitive;
+        let requiredChanged = (indicatorEditing.required || "") != requiredIndicator;
+        let sensitiveChanged = (indicatorEditing.is_sensitive || "") != sensitiveIndicator;
         let parentIDChanged = (indicatorEditing.parentID || "") != $("#parentID").val();
         let sortChanged = (indicatorEditing.sort || "") != $("#sort").val();
         let htmlChanged = (indicatorEditing.html || "") != codeEditorHtml.getValue();
@@ -1521,11 +1530,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/name',
                     data: {name: $('#name').val(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 })
             );
         }
@@ -1536,11 +1541,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/format',
                     data: {format: $('#format').val(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 })
             );
         }
@@ -1551,11 +1552,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/description',
                     data: {description: $('#description').val(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 })
             );
         }
@@ -1566,11 +1563,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/default',
                     data: {default: $('#default').val(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 })
             );
         }
@@ -1580,12 +1573,8 @@ function getForm(indicatorID, series) {
                 $.ajax({
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/required',
-                    data: {required: isRequired,
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                    data: {required: requiredIndicator,
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 }));
         }
 
@@ -1594,30 +1583,31 @@ function getForm(indicatorID, series) {
                 $.ajax({
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/sensitive',
-                    data: {is_sensitive: isSensitive,
-                    CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                    data: {is_sensitive: sensitiveIndicator,
+                    CSRFToken: '<!--{$CSRFToken}-->'}
                 }));
         }
 
-        if(isDisabled == 1){
+        if(disabledIndicator == 1){
             calls.push(   	        
                 $.ajax({
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/disabled',
-                    data: {disabled: isDisabled,
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                    data: {disabled: disabledIndicator,
+                        CSRFToken: '<!--{$CSRFToken}-->'}
+                }));
+        }
+        if(deletedIndicator == 2) {
+            calls.push(
+                $.ajax({
+                    type: 'POST',
+                    url: '../api/?a=formEditor/' + indicatorID + '/deleted',
+                    data: {deleted: deletedIndicator,
+                    CSRFToken: '<!--{$CSRFToken}-->'}
                 }));
         }
 
-        if(parentIDChanged){
+            if(parentIDChanged){
             calls.push(
                 $.ajax({
                     type: 'POST',
@@ -1639,11 +1629,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/sort',
                     data: {sort: $('#sort').val(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
             }));
         }
 
@@ -1653,11 +1639,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/html',
                     data: {html: codeEditorHtml.getValue(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
             }));
         }
 
@@ -1667,11 +1649,7 @@ function getForm(indicatorID, series) {
                     type: 'POST',
                     url: '../api/?a=formEditor/' + indicatorID + '/htmlPrint',
                     data: {htmlPrint: codeEditorHtmlPrint.getValue(),
-                        CSRFToken: '<!--{$CSRFToken}-->'},
-                    success: function(res) {
-                        if(res != null) {
-                        }
-                    }
+                        CSRFToken: '<!--{$CSRFToken}-->'}
                 }));
         }
 
